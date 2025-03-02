@@ -12,9 +12,9 @@ Settings/station management via FileMaker Pro
 
 
 # Short term To-Do:
-Station add/edit mobile UI
+Station add/edit mobile UI **DONE**
 
-App settings mobile UI
+App settings mobile UI **DONE**
 
 Make the JS player prettier
 
