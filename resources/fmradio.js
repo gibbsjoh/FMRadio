@@ -1,4 +1,5 @@
 // version 0.02 - adding support for non-HLS via the <audio> tag
+// version 0.03 - changed the id of the debug message
 
 function myFMPlayer (theURL) {
   var theBrowser = navigator.userAgent;
@@ -16,13 +17,13 @@ function myFMPlayer (theURL) {
   let urlToPlay = decodeURIComponent(theURL);
   var video = document.getElementById('videoPlayer');
   if (is_iOS == 1 && theURL.includes("m38u")){
-      document.getElementById("playerError").innerHTML = "Using Safari native player";
+      document.getElementById("playerDebug").innerHTML = "Using Safari native player";
       video.src = urlToPlay;
       video.addEventListener('loadedmetadata', function() {
           video.play();
       });
   } else if (Hls.isSupported() && theURL.includes("m3u8")) {
-      document.getElementById("playerError").innerHTML = "Using HLS.js";
+      document.getElementById("playerDebug").innerHTML = "Using HLS.js";
       var hls = new Hls();
       hls.loadSource(urlToPlay);
       hls.attachMedia(video);
@@ -30,7 +31,7 @@ function myFMPlayer (theURL) {
           video.play();
       });
   } else if (!theURL.includes("m3u8")) { // non-HLS streams? 
-      document.getElementById("playerError").innerHTML = "Non-HLS stream";
+      document.getElementById("playerDebug").innerHTML = "Non-HLS stream";
       // for some reason this uses the video tag player anyway... weird!
       video.src = urlToPlay;
       const audioPlayer = document.getElementById('audioPlayer');
@@ -43,6 +44,6 @@ function myFMPlayer (theURL) {
       }
   else{
     // show an error
-    document.getElementById("playerError").innerHTML = "Playback not supported";
+    document.getElementById("playerDebug").innerHTML = "Playback not supported";
   }
 }
