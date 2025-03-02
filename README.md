@@ -5,16 +5,23 @@ I started building this because I didn't really like any of the iOS or self-host
 
 # Currently Working:
 Can play streams, HLS and AAC defintely working, others should too
+
 Basic player/station selector mobile UI
+
 Settings/station management via FileMaker Pro
+
 
 # Short term To-Do:
 Station add/edit mobile UI
+
 App settings mobile UI
+
 Make the JS player prettier
+
 
 # Long Term To-Do:
 Control the JS player via FileMaker Perform Javascript + stop/pause functions in the JS
+
 More to come!
 
 # Errata
