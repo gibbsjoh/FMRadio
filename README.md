@@ -18,6 +18,8 @@ App settings mobile UI **DONE**
 
 Make the JS player prettier
 
+Add some pre-baked station lists to import
+
 
 # Long Term To-Do:
 Control the JS player via FileMaker Perform Javascript + stop/pause functions in the JS
