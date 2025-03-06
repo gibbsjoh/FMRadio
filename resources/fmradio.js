@@ -53,21 +53,28 @@ function myFMPlayer (theURL,theStationName) {
         // use the parser
         console.log("Parser");
         document.getElementById("playerDebug").innerHTML = "Using M3U Parser";
-
+          //console.log(thePlaylist);
           var playlist = M3U.parse(thePlaylist);
-          console.log(playlist);
+          //console.log(playlist);
           let i = 0;
           if (i < playlist.length) {
             let thisSong = playlist[i++].file;
             let thisSongName = playlist[i++].title;
-            console.log(thisSongName);
+            let thisArtist = playlist[i++].artist;
+            // Tell us what song is playing
+            onNow = thisArtist + " - " + thisSongName;
+            document.getElementById("playlistNowPlaying").innerHTML = onNow;
             const audioPlayer = document.getElementById('videoPlayer');
-            // Set the source of the audio element to the stream URL
             audioPlayer.src = thisSong;
-            // Optionally, you can start playing the stream automatically
-            audioPlayer.play().catch(error => {
-            console.error('Error playing the audio stream:', error);
+            audioPlayer.addEventListener('loadedmetadata', function() {
+              audioPlayer.play();
             });
+            // Set the source of the audio element to the stream URL
+            // audioPlayer.src = thisSong;
+            // // Optionally, you can start playing the stream automatically
+            // audioPlayer.play().catch(error => {
+            // console.error('Error playing the audio stream:', error);
+            // });
           }
  
     } 
