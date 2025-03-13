@@ -5,6 +5,7 @@
 //                Added dev/desktop settings layout
 //                Added fields/scripts to import JS/HTML from specified files
 //                M3U play next working
+// version 0.06 - shows the playing track or station in the FM global (added for stations)
 
 function myFMPlayer (theURL,theStationName) {
     var theBrowser = navigator.userAgent;
@@ -56,6 +57,7 @@ function myFMPlayer (theURL,theStationName) {
     // ****** HLS/M38U on iOS Safari (in the case, FileMakerGo is iOS Safari bc it uses that browser engine)
     if (is_iOS == 1 && theURL.includes("m3u8")){
         document.getElementById("playerDebug").innerHTML = "Using Safari native player";
+        performFileMakerScript("STATION > Show Now Playing",theStationName);
         video.src = urlToPlay;
         video.addEventListener('loadedmetadata', function() {
             video.play();
@@ -93,6 +95,7 @@ function myFMPlayer (theURL,theStationName) {
     // ***** For Non-Safari, uses HLS.js to play HLS/M38U
     else if (Hls.isSupported() && theURL.includes("m3u8")) {
         document.getElementById("playerDebug").innerHTML = "Using HLS.js";
+        performFileMakerScript("STATION > Show Now Playing",theStationName);
         var hls = new Hls();
         hls.loadSource(urlToPlay);
         hls.attachMedia(video);
@@ -103,6 +106,7 @@ function myFMPlayer (theURL,theStationName) {
     // ***** "Everything else" - it's not a M3U playlist, it's not a HLS/M3U8 playlist, so we use HTML5 native player
     else if (!theURL.includes("m3u8")) { // non-HLS streams? 
         document.getElementById("playerDebug").innerHTML = "Non-HLS stream";
+        performFileMakerScript("STATION > Show Now Playing",theStationName);
         // for some reason this uses the video tag player anyway... weird!
         video.src = urlToPlay;
         const audioPlayer = document.getElementById('audioPlayer');
