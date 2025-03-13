@@ -1,6 +1,10 @@
 // version 0.02 - adding support for non-HLS via the <audio> tag
 // version 0.03 - changed the id of the debug message
 // version 0.04 - cleaned up JS, added support for M3U playlists of songs, some additions to HTML
+// version 0.05 - Added Perform FileMaker Script function and added to M3U playlist for testing (shows current song in FM)
+//                Added dev/desktop settings layout
+//                Added fields/scripts to import JS/HTML from specified files
+//                M3U play next working
 
 function myFMPlayer (theURL,theStationName) {
     var theBrowser = navigator.userAgent;
@@ -26,7 +30,16 @@ function myFMPlayer (theURL,theStationName) {
    // Uses HLS.js on non-Safari, Safari-native on iOS
    // to do: Play streams in different formats (not just M3U8) **DONE, seems to work**
    // also to do: make the web viewer display look nicer **IN PROGRESS**
-    
+
+   // added 0.05 06/03/25 - perform a FileMaker script when playing to show what's being played etc in FM
+   function performFileMakerScript(fmScriptName,fmScriptParameter) {
+    FileMaker.PerformScriptWithOption (  fmScriptName, fmScriptParameter );
+  }
+   
+    //available scripts (to be added to if needed):
+    // STATION > Show Now Playing
+  
+
     // if it's a pure M3U file, we pass the file contents, not the URL
     if (!theFirstChars.includes("http")){
       thePlaylist = theURL;
@@ -56,27 +69,26 @@ function myFMPlayer (theURL,theStationName) {
           //console.log(thePlaylist);
           var playlist = M3U.parse(thePlaylist);
           //console.log(playlist);
-          let i = 0;
-          if (i < playlist.length) {
-            let thisSong = playlist[i++].file;
-            let thisSongName = playlist[i++].title;
-            let thisArtist = playlist[i++].artist;
-            // Tell us what song is playing
-            onNow = thisArtist + " - " + thisSongName;
-            document.getElementById("playlistNowPlaying").innerHTML = onNow;
-            const audioPlayer = document.getElementById('videoPlayer');
-            audioPlayer.src = thisSong;
-            audioPlayer.addEventListener('loadedmetadata', function() {
-              audioPlayer.play();
-            });
-            // Set the source of the audio element to the stream URL
-            // audioPlayer.src = thisSong;
-            // // Optionally, you can start playing the stream automatically
-            // audioPlayer.play().catch(error => {
-            // console.error('Error playing the audio stream:', error);
-            // });
+          const audioPlayer = document.getElementById('videoPlayer');
+          
+          // function to play next track
+          function next (audio, playlist, i) {
+            if (i < playlist.length) {
+              let thisSongName = playlist[i].title;
+              let thisArtist = playlist[i].artist;
+              audio.src = playlist[i++].file;
+
+              // Tell us what song is playing
+              onNow = thisArtist + " - " + thisSongName;
+              //document.getElementById("playlistNowPlaying").innerHTML = onNow;
+              performFileMakerScript("STATION > Show Now Playing",onNow);
+              audio.onended = next.bind(null, audio, playlist, i);
+              audio.play();
+            }
           }
- 
+            
+        //begin playback
+        next(audioPlayer, playlist, 0);
     } 
     // ***** For Non-Safari, uses HLS.js to play HLS/M38U
     else if (Hls.isSupported() && theURL.includes("m3u8")) {
