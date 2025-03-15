@@ -6,6 +6,8 @@
 //                Added fields/scripts to import JS/HTML from specified files
 //                M3U play next working
 // version 0.06 - shows the playing track or station in the FM global (added for stations)
+// version 0.07 - adding pause JS function and associated button in FM [wip]
+// version 0.071 - debugging on WebDirect for M3U
 
 function myFMPlayer (theURL,theStationName) {
     var theBrowser = navigator.userAgent;
@@ -36,11 +38,16 @@ function myFMPlayer (theURL,theStationName) {
    function performFileMakerScript(fmScriptName,fmScriptParameter) {
     FileMaker.PerformScriptWithOption (  fmScriptName, fmScriptParameter );
   }
+
+  function pausePlayback(){
+    var thePlayer = document.getElementById("videoPlayer");
+    thePlayer.pause();
+  }
    
     //available scripts (to be added to if needed):
     // STATION > Show Now Playing
   
-
+    // ****** M3U playlist (list of songs w/ urls)
     // if it's a pure M3U file, we pass the file contents, not the URL
     if (!theFirstChars.includes("http")){
       thePlaylist = theURL;
@@ -63,7 +70,7 @@ function myFMPlayer (theURL,theStationName) {
             video.play();
         });
     } 
-    // ****** M3U playlist (or M3U Extended), uses native HTML5 player
+    // ****** M3U playlist (or M3U Extended), not song list, uses native HTML5 player
     else if (isPlaylist == 1){
         // use the parser
         console.log("Parser");
@@ -78,17 +85,53 @@ function myFMPlayer (theURL,theStationName) {
             if (i < playlist.length) {
               let thisSongName = playlist[i].title;
               let thisArtist = playlist[i].artist;
+              let thisURL = playlist[i].file;
               audio.src = playlist[i++].file;
 
               // Tell us what song is playing
               onNow = thisArtist + " - " + thisSongName;
               //document.getElementById("playlistNowPlaying").innerHTML = onNow;
-              performFileMakerScript("STATION > Show Now Playing",onNow);
+              
+              
+              audio.addEventListener("error", function(e) { 
+                console.log("Logging playback error: " + e); });
+
               audio.onended = next.bind(null, audio, playlist, i);
               audio.play();
+              performFileMakerScript("STATION > Show Now Playing",onNow);
+              //console.log(thisURL);
             }
           }
-            
+          // audioPlayer.addEventListener('error', (event) => {
+          //   let error = audioPlayer.error;
+          //   let errorMessage = "";
+          
+          //   if (error) {
+          //     // Map error codes to error messages
+          //     switch (error.code) {
+          //       case MediaError.MEDIA_ERR_ABORTED:
+          //         errorMessage = "Playback was aborted by the user.";
+          //         break;
+          //       case MediaError.MEDIA_ERR_NETWORK:
+          //         errorMessage = "A network error caused the audio to fail.";
+          //         break;
+          //       case MediaError.MEDIA_ERR_DECODE:
+          //         errorMessage = "An error occurred while decoding the audio.";
+          //         break;
+          //       case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
+          //         errorMessage = "The audio file format is not supported or the file is missing.";
+          //         break;
+          //       default:
+          //         errorMessage = "An unknown error occurred.";
+          //     }
+          //   } else {
+          //     errorMessage = "An unexpected error occurred.";
+          //   }
+          
+          //   console.error("Audio Error: ", errorMessage);
+          //   document.getElementById("playerDebug").innerHTML = `Audio Error: ${errorMessage}`;
+          // });
+
         //begin playback
         next(audioPlayer, playlist, 0);
     } 
