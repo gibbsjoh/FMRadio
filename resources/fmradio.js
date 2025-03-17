@@ -8,8 +8,21 @@
 // version 0.06 - shows the playing track or station in the FM global (added for stations)
 // version 0.07 - adding pause JS function and associated button in FM [wip]
 // version 0.071 - debugging on WebDirect for M3U
+// version 0.072 - verbose logging, pause/resume function
 
-function myFMPlayer (theURL,theStationName) {
+// 16/03/25 - adding "pause" and "resume" functions
+function pauseOrResumePlayback(action){
+  var thePlayer = document.getElementById("videoPlayer");
+  if (action == "resume") {
+    thePlayer.play();
+    console.log("resuming");
+} else if (action == "pause") {
+  thePlayer.pause();
+  console.log("pausing");
+}
+}
+
+function myFMPlayer (theURL,theStationName, verboseLogging) {
     var theBrowser = navigator.userAgent;
     let theFirstChars = theURL.substring(0,4);
     // are we on iPhone?
@@ -19,8 +32,9 @@ function myFMPlayer (theURL,theStationName) {
     } else {
       is_iOS = 0;
     }
-    console.log(theFirstChars);
-
+    if (verboseLogging == 1){
+      console.log(theFirstChars);
+    }
   // show the station name in the WebViewer
   let playerStatus = "Playing";
   let playerNowPlaying = playerStatus.concat(" ", theStationName);
@@ -38,12 +52,8 @@ function myFMPlayer (theURL,theStationName) {
    function performFileMakerScript(fmScriptName,fmScriptParameter) {
     FileMaker.PerformScriptWithOption (  fmScriptName, fmScriptParameter );
   }
-
-  function pausePlayback(){
-    var thePlayer = document.getElementById("videoPlayer");
-    thePlayer.pause();
-  }
    
+
     //available scripts (to be added to if needed):
     // STATION > Show Now Playing
   
@@ -56,8 +66,9 @@ function myFMPlayer (theURL,theStationName) {
       urlToPlay = decodeURIComponent(theURL);
       isPlaylist = 0;
     }
-
-    console.log(isPlaylist);
+    if (verboseLogging == 1){
+      console.log(isPlaylist);
+    }
     
     var video = document.getElementById('videoPlayer');
 
@@ -66,6 +77,10 @@ function myFMPlayer (theURL,theStationName) {
         document.getElementById("playerDebug").innerHTML = "Using Safari native player";
         performFileMakerScript("STATION > Show Now Playing",theStationName);
         video.src = urlToPlay;
+        if (verboseLogging == 1){
+          console.log(urlToPlay);
+          console.log("using Safari native player");
+        }
         video.addEventListener('loadedmetadata', function() {
             video.play();
         });
@@ -77,7 +92,9 @@ function myFMPlayer (theURL,theStationName) {
         document.getElementById("playerDebug").innerHTML = "Using M3U Parser";
           //console.log(thePlaylist);
           var playlist = M3U.parse(thePlaylist);
-          //console.log(playlist);
+          if (verboseLogging == 1){
+            console.log(playlist);
+          }
           const audioPlayer = document.getElementById('videoPlayer');
           
           // function to play next track
@@ -99,47 +116,25 @@ function myFMPlayer (theURL,theStationName) {
               audio.onended = next.bind(null, audio, playlist, i);
               audio.play();
               performFileMakerScript("STATION > Show Now Playing",onNow);
-              //console.log(thisURL);
+              if (verboseLogging == 1){
+              console.log(thisURL);
+              console.log("using HTML5 native player");
+              }
             }
           }
-          // audioPlayer.addEventListener('error', (event) => {
-          //   let error = audioPlayer.error;
-          //   let errorMessage = "";
-          
-          //   if (error) {
-          //     // Map error codes to error messages
-          //     switch (error.code) {
-          //       case MediaError.MEDIA_ERR_ABORTED:
-          //         errorMessage = "Playback was aborted by the user.";
-          //         break;
-          //       case MediaError.MEDIA_ERR_NETWORK:
-          //         errorMessage = "A network error caused the audio to fail.";
-          //         break;
-          //       case MediaError.MEDIA_ERR_DECODE:
-          //         errorMessage = "An error occurred while decoding the audio.";
-          //         break;
-          //       case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
-          //         errorMessage = "The audio file format is not supported or the file is missing.";
-          //         break;
-          //       default:
-          //         errorMessage = "An unknown error occurred.";
-          //     }
-          //   } else {
-          //     errorMessage = "An unexpected error occurred.";
-          //   }
-          
-          //   console.error("Audio Error: ", errorMessage);
-          //   document.getElementById("playerDebug").innerHTML = `Audio Error: ${errorMessage}`;
-          // });
 
-        //begin playback
-        next(audioPlayer, playlist, 0);
+          //call the next() function to begin playback
+          next(audioPlayer, playlist, 0);
     } 
-    // ***** For Non-Safari, uses HLS.js to play HLS/M38U
+    // ***** For all other browsers, uses HLS.js to play HLS/M38U if supported
     else if (Hls.isSupported() && theURL.includes("m3u8")) {
         document.getElementById("playerDebug").innerHTML = "Using HLS.js";
         performFileMakerScript("STATION > Show Now Playing",theStationName);
         var hls = new Hls();
+        if (verboseLogging == 1){
+          console.log(urlToPlay);
+          console.log("using HLS.js");
+          }
         hls.loadSource(urlToPlay);
         hls.attachMedia(video);
         hls.on(Hls.Events.MANIFEST_PARSED, function() {
@@ -151,6 +146,10 @@ function myFMPlayer (theURL,theStationName) {
         document.getElementById("playerDebug").innerHTML = "Non-HLS stream";
         performFileMakerScript("STATION > Show Now Playing",theStationName);
         // for some reason this uses the video tag player anyway... weird!
+        if (verboseLogging == 1){
+          console.log(urlToPlay);
+          console.log("*Everything else* via HTML5 native player");
+          }
         video.src = urlToPlay;
         const audioPlayer = document.getElementById('audioPlayer');
           // Set the source of the audio element to the stream URL
