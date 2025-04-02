@@ -1,3 +1,6 @@
+# I need to update this, I know! (02/04/25)
+Version 0.1 released, let's call this the minimum viable product - it seems to work as a basic streaming player and all features planned are more or less done.
+
 # FMRadio
 Streaming audio app in FileMaker using JavaScript.
 
