@@ -10,6 +10,8 @@
 // version 0.071 - debugging on WebDirect for M3U
 // version 0.072 - verbose logging, pause/resume function
 
+// version 0.1 - minor JS amend to detect Safari as the browser engine on macOS (includes FMP on macOS)
+
 // 16/03/25 - adding "pause" and "resume" functions
 function pauseOrResumePlayback(action){
   var thePlayer = document.getElementById("videoPlayer");
@@ -35,6 +37,13 @@ function myFMPlayer (theURL,theStationName, verboseLogging) {
     if (verboseLogging == 1){
       console.log(theFirstChars);
     }
+  
+  // function to check if we're on Sarafi - may be overlapping the iOS check above?
+  function isSafari() {
+    return navigator.vendor && navigator.vendor.indexOf('Apple') > -1 &&
+           navigator.userAgent && !navigator.userAgent.match('CriOS') &&
+           !navigator.userAgent.match('FxiOS');
+  }
   // show the station name in the WebViewer
   let playerStatus = "Playing";
   let playerNowPlaying = playerStatus.concat(" ", theStationName);
@@ -73,8 +82,10 @@ function myFMPlayer (theURL,theStationName, verboseLogging) {
     var video = document.getElementById('videoPlayer');
 
     // ****** HLS/M38U on iOS Safari (in the case, FileMakerGo is iOS Safari bc it uses that browser engine)
-    if (is_iOS == 1 && theURL.includes("m3u8")){
-        document.getElementById("playerDebug").innerHTML = "Using Safari native player";
+    if ((is_iOS == 1 || isSafari()) && theURL.includes("m3u8")){
+      if (verboseLogging == 1){
+            document.getElementById("playerDebug").innerHTML = "Using Safari native player";
+        }
         performFileMakerScript("STATION > Show Now Playing",theStationName);
         video.src = urlToPlay;
         if (verboseLogging == 1){
@@ -89,7 +100,9 @@ function myFMPlayer (theURL,theStationName, verboseLogging) {
     else if (isPlaylist == 1){
         // use the parser
         console.log("Parser");
-        document.getElementById("playerDebug").innerHTML = "Using M3U Parser";
+        if (verboseLogging == 1){
+          document.getElementById("playerDebug").innerHTML = "Using M3U Parser";
+        }
           //console.log(thePlaylist);
           var playlist = M3U.parse(thePlaylist);
           if (verboseLogging == 1){
@@ -128,7 +141,9 @@ function myFMPlayer (theURL,theStationName, verboseLogging) {
     } 
     // ***** For all other browsers, uses HLS.js to play HLS/M38U if supported
     else if (Hls.isSupported() && theURL.includes("m3u8")) {
-        document.getElementById("playerDebug").innerHTML = "Using HLS.js";
+        if (verboseLogging == 1){
+          document.getElementById("playerDebug").innerHTML = "Using HLS.js";
+        }
         performFileMakerScript("STATION > Show Now Playing",theStationName);
         var hls = new Hls();
         if (verboseLogging == 1){
@@ -143,7 +158,9 @@ function myFMPlayer (theURL,theStationName, verboseLogging) {
     } 
     // ***** "Everything else" - it's not a M3U playlist, it's not a HLS/M3U8 playlist, so we use HTML5 native player
     else if (!theURL.includes("m3u8")) { // non-HLS streams? 
-        document.getElementById("playerDebug").innerHTML = "Non-HLS stream";
+      if (verboseLogging == 1){
+          document.getElementById("playerDebug").innerHTML = "Non-HLS stream";
+      }
         performFileMakerScript("STATION > Show Now Playing",theStationName);
         // for some reason this uses the video tag player anyway... weird!
         if (verboseLogging == 1){
